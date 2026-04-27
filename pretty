@@ -4,6 +4,7 @@ set -e
 MODE=""
 CHECK=false
 STAGED=false
+FORCE=false
 
 # --------- PARSEO DE ARGUMENTOS ---------
 for arg in "$@"; do
@@ -17,18 +18,21 @@ for arg in "$@"; do
     --staged)
       STAGED=true
       ;;
+    --force)  # 🔧 CAMBIO
+      FORCE=true
+      ;;
     *)
       echo "❌ Argumento desconocido: $arg"
-      echo "Uso: pretty [tabs|spaces] [--check] [--staged]"
+      echo "Uso: pretty [tabs|spaces] [--check] [--staged] [--force]"
       exit 1
       ;;
   esac
 done
 
-# 🔧 CAMBIO: Validación explícita del modo
+# --------- VALIDACIÓN DE MODO ---------
 if [[ "$MODE" != "tabs" && "$MODE" != "spaces" ]]; then
   echo "❌ Debes especificar 'tabs' o 'spaces'"
-  echo "Uso: pretty [tabs|spaces] [--check] [--staged]"
+  echo "Uso: pretty [tabs|spaces] [--check] [--staged] [--force]"
   exit 1
 fi
 
@@ -39,7 +43,6 @@ if ! command -v npx &> /dev/null; then
 fi
 
 # --------- VALIDACIÓN GIT ---------
-# 🔧 CAMBIO: Validar repo git si se usa --staged
 if [ "$STAGED" = true ]; then
   if ! git rev-parse --git-dir > /dev/null 2>&1; then
     echo "❌ --staged requiere un repositorio git"
@@ -61,12 +64,19 @@ fi
 echo "🔧 Modo: $MSG"
 
 # --------- EDITORCONFIG ---------
-# 🔧 CAMBIO: Aviso claro (sin interacción para no romper CI)
+# 🔧 CAMBIO: control con --force
 if [ -f .editorconfig ]; then
-  echo "⚠️ .editorconfig ya existe y será sobrescrito"
+  if [ "$FORCE" = false ]; then
+    echo "⚠️ .editorconfig ya existe"
+    echo "💡 Usa --force para sobrescribirlo"
+  else
+    echo "⚠️ Sobrescribiendo .editorconfig (--force)"
+  fi
 fi
 
-cat > .editorconfig << EOF
+# 🔧 CAMBIO: solo escribir si no existe o si --force
+if [ ! -f .editorconfig ] || [ "$FORCE" = true ]; then
+  cat > .editorconfig << EOF
 root = true
 
 [*]
@@ -84,9 +94,11 @@ trim_trailing_whitespace = false
 indent_style = space
 indent_size = 2
 EOF
+else
+  echo "⏭️ Se mantiene el .editorconfig existente"
+fi
 
 # --------- ARCHIVOS ---------
-# 🔧 CAMBIO: Uso de array para evitar problemas con espacios en nombres de archivo
 if [ "$STAGED" = true ]; then
   mapfile -t FILES < <(git diff --cached --name-only --diff-filter=ACM)
   echo "📦 Solo archivos staged"
@@ -94,10 +106,15 @@ else
   FILES=(".")
 fi
 
+# 🔧 CAMBIO: evitar ejecutar si no hay archivos staged
+if [ "$STAGED" = true ] && [ ${#FILES[@]} -eq 0 ]; then
+  echo "📭 No hay archivos staged para procesar"
+  exit 0
+fi
+
 # --------- PRETTIER ---------
 echo "🎨 Ejecutando Prettier..."
 
-# 🔧 CAMBIO: Uso de array correctamente expandido
 if [ "$CHECK" = true ]; then
   npx --yes prettier --check "${FILES[@]}"
 else
