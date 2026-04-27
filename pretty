@@ -25,7 +25,9 @@ for arg in "$@"; do
   esac
 done
 
-if [[ -z "$MODE" ]]; then
+# 🔧 CAMBIO: Validación explícita del modo
+if [[ "$MODE" != "tabs" && "$MODE" != "spaces" ]]; then
+  echo "❌ Debes especificar 'tabs' o 'spaces'"
   echo "Uso: pretty [tabs|spaces] [--check] [--staged]"
   exit 1
 fi
@@ -36,30 +38,32 @@ if ! command -v npx &> /dev/null; then
   exit 1
 fi
 
+# --------- VALIDACIÓN GIT ---------
+# 🔧 CAMBIO: Validar repo git si se usa --staged
+if [ "$STAGED" = true ]; then
+  if ! git rev-parse --git-dir > /dev/null 2>&1; then
+    echo "❌ --staged requiere un repositorio git"
+    exit 1
+  fi
+fi
+
 # --------- CONFIG ---------
 if [ "$MODE" == "tabs" ]; then
   INDENT_STYLE="tab"
   INDENT_SIZE=4
-  USE_TABS=true
   MSG="tabs (ancho visual 4)"
 else
   INDENT_STYLE="space"
   INDENT_SIZE=2
-  USE_TABS=false
   MSG="2 espacios"
 fi
 
 echo "🔧 Modo: $MSG"
 
 # --------- EDITORCONFIG ---------
+# 🔧 CAMBIO: Aviso claro (sin interacción para no romper CI)
 if [ -f .editorconfig ]; then
-  echo "⚠️ .editorconfig ya existe"
-  read -p "¿Quieres sobrescribirlo? (y/n): " CONFIRM
-
-  if [[ "$CONFIRM" != "y" ]]; then
-    echo "❌ Cancelado"
-    exit 0
-  fi
+  echo "⚠️ .editorconfig ya existe y será sobrescrito"
 fi
 
 cat > .editorconfig << EOF
@@ -82,20 +86,22 @@ indent_size = 2
 EOF
 
 # --------- ARCHIVOS ---------
+# 🔧 CAMBIO: Uso de array para evitar problemas con espacios en nombres de archivo
 if [ "$STAGED" = true ]; then
-  FILES=$(git diff --cached --name-only --diff-filter=ACM)
+  mapfile -t FILES < <(git diff --cached --name-only --diff-filter=ACM)
   echo "📦 Solo archivos staged"
 else
-  FILES="."
+  FILES=(".")
 fi
 
 # --------- PRETTIER ---------
 echo "🎨 Ejecutando Prettier..."
 
+# 🔧 CAMBIO: Uso de array correctamente expandido
 if [ "$CHECK" = true ]; then
-  npx --yes prettier --check $FILES
+  npx --yes prettier --check "${FILES[@]}"
 else
-  npx --yes prettier --write $FILES
+  npx --yes prettier --write "${FILES[@]}"
 fi
 
 echo "✅ Completado"
