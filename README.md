@@ -1,45 +1,42 @@
 # 🧰 pretty — Code Formatter CLI
 
-`pretty` es una herramienta CLI en Bash para formatear proyectos automáticamente usando **Prettier** y generar un `.editorconfig` consistente.
+`pretty` es una herramienta CLI en Bash para formatear proyectos automáticamente usando Prettier y generar un `.editorconfig` consistente.
+
+---
 
 ## 🚀 Características
 
-* Formatea código con Prettier
-* Genera `.editorconfig` automáticamente
-* Soporta:
-
-  * Tabs (ancho visual 4)
-  * Espacios (2 espacios)
-* Flags profesionales:
-
-  * `--check` → solo verifica formato
-  * `--staged` → solo archivos en staging (Git)
-* Integración con hooks de Git
+- Formatea código con Prettier
+- Genera `.editorconfig` automáticamente
+- Soporta:
+  - Tabs (ancho visual 4)
+  - Espacios (2 espacios)
+- Flags profesionales:
+  - --check → solo verifica formato
+  - --staged → solo archivos en staging (Git)
+  - --force → sobrescribe .editorconfig existente
+- Integración con hooks de Git
 
 ---
 
 ## 📦 Requisitos
 
-* Node.js
-* npx (incluido con npm)
-* Git (opcional para `--staged`)
+- Node.js
+- npx (incluido con npm)
+- Git (opcional para --staged)
 
 ---
 
 ## ⚙️ Instalación
 
-```bash
-mkdir -p ~/.local/bin
-nano ~/.local/bin/pretty
-chmod +x ~/.local/bin/pretty
-```
+mkdir -p ~/.local/bin  
+nano ~/.local/bin/pretty  
+chmod +x ~/.local/bin/pretty  
 
 Añadir al PATH (Zsh):
 
-```bash
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
-source ~/.zshrc
-```
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc  
+source ~/.zshrc  
 
 ---
 
@@ -47,29 +44,26 @@ source ~/.zshrc
 
 ### Formatear todo el proyecto
 
-```bash
-pretty spaces
-```
-
-```bash
-pretty tabs
-```
+pretty spaces  
+pretty tabs  
 
 ---
 
 ### Solo comprobar formato (modo CI)
 
-```bash
-pretty spaces --check
-```
+pretty spaces --check  
 
 ---
 
 ### Solo archivos en staging (Git)
 
-```bash
-pretty spaces --staged
-```
+pretty spaces --staged  
+
+---
+
+### Forzar sobrescritura de .editorconfig
+
+pretty spaces --force  
 
 ---
 
@@ -77,45 +71,38 @@ pretty spaces --staged
 
 Crear hook:
 
-```bash
-nano .git/hooks/pre-commit
-```
+nano .git/hooks/pre-commit  
 
 Contenido:
 
-```bash
-#!/bin/bash
-pretty spaces --staged
-```
+#!/bin/bash  
+pretty spaces --staged  
 
 Permisos:
 
-```bash
-chmod +x .git/hooks/pre-commit
-```
+chmod +x .git/hooks/pre-commit  
 
 ---
 
-## ⚠️ Notas
+## ⚠️ Comportamiento importante
 
-* Si Prettier encuentra errores de sintaxis, el proceso fallará.
-* `.editorconfig` se sobrescribe automáticamente.
+- Si Prettier encuentra errores de sintaxis, el proceso fallará.
+- .editorconfig no se sobrescribe por defecto.
+- Usa --force si quieres reemplazarlo manualmente.
 
 ---
 
 ## 📁 Ejemplo de flujo
 
-```bash
-git add .
-pretty spaces --staged
-git commit -m "formatted code"
-```
+git add .  
+pretty spaces --staged  
+git commit -m "formatted code"  
 
 ---
 
 ## 🧠 Objetivo
 
-Estandarizar el formato de código en proyectos de forma rápida y consistente.
+Estandarizar automáticamente el formato de código en proyectos para evitar inconsistencias en equipos y repositorios.
 
 ---
 
