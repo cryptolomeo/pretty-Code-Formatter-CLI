@@ -1,0 +1,95 @@
+#!/bin/bash
+set -e
+
+MODE=""
+CHECK=false
+STAGED=false
+
+# --------- PARSEO DE ARGUMENTOS ---------
+for arg in "$@"; do
+  case $arg in
+    tabs|spaces)
+      MODE=$arg
+      ;;
+    --check)
+      CHECK=true
+      ;;
+    --staged)
+      STAGED=true
+      ;;
+    *)
+      echo "❌ Argumento desconocido: $arg"
+      echo "Uso: pretty [tabs|spaces] [--check] [--staged]"
+      exit 1
+      ;;
+  esac
+done
+
+if [[ -z "$MODE" ]]; then
+  echo "Uso: pretty [tabs|spaces] [--check] [--staged]"
+  exit 1
+fi
+
+# --------- DEPENDENCIAS ---------
+if ! command -v npx &> /dev/null; then
+  echo "❌ npx no está instalado. Instala Node.js."
+  exit 1
+fi
+
+# --------- CONFIG ---------
+if [ "$MODE" == "tabs" ]; then
+  INDENT_STYLE="tab"
+  INDENT_SIZE=4
+  USE_TABS=true
+  MSG="tabs (ancho visual 4)"
+else
+  INDENT_STYLE="space"
+  INDENT_SIZE=2
+  USE_TABS=false
+  MSG="2 espacios"
+fi
+
+echo "🔧 Modo: $MSG"
+
+# --------- EDITORCONFIG ---------
+if [ -f .editorconfig ]; then
+  echo "⚠️ Sobrescribiendo .editorconfig"
+fi
+
+cat > .editorconfig << EOF
+root = true
+
+[*]
+indent_style = $INDENT_STYLE
+indent_size = $INDENT_SIZE
+end_of_line = lf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[*.md]
+trim_trailing_whitespace = false
+
+[*.{yml,yaml}]
+indent_style = space
+indent_size = 2
+EOF
+
+# --------- ARCHIVOS ---------
+if [ "$STAGED" = true ]; then
+  FILES=$(git diff --cached --name-only --diff-filter=ACM)
+  echo "📦 Solo archivos staged"
+else
+  FILES="."
+fi
+
+# --------- PRETTIER ---------
+echo "🎨 Ejecutando Prettier..."
+
+if [ "$CHECK" = true ]; then
+  npx --yes prettier --check $FILES
+else
+  npx --yes prettier --write $FILES
+fi
+
+echo "✅ Completado"
