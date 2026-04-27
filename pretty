@@ -53,7 +53,13 @@ echo "🔧 Modo: $MSG"
 
 # --------- EDITORCONFIG ---------
 if [ -f .editorconfig ]; then
-  echo "⚠️ Sobrescribiendo .editorconfig"
+  echo "⚠️ .editorconfig ya existe"
+  read -p "¿Quieres sobrescribirlo? (y/n): " CONFIRM
+
+  if [[ "$CONFIRM" != "y" ]]; then
+    echo "❌ Cancelado"
+    exit 0
+  fi
 fi
 
 cat > .editorconfig << EOF
