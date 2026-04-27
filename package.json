@@ -1,0 +1,15 @@
+
+{
+  "name": "pretty-cli",
+  "version": "1.0.0",
+  "description": "CLI tool to format code with Prettier and generate .editorconfig",
+  "bin": {
+    "pretty": "./pretty"
+  },
+  "scripts": {
+    "test": "bash tests/test.sh"
+  },
+  "keywords": ["prettier", "formatter", "cli", "editorconfig"],
+  "author": "Iván Rodríguez",
+  "license": "MIT"
+}

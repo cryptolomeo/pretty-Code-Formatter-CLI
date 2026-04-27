@@ -1,0 +1,26 @@
+# Archivos temporales y de respaldo
+*~
+*.swp
+*.swo
+*.bak
+*.tmp
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Archivos de entorno (para no subir claves)
+.env
+.env.local
+
+# Directorios de logs
+logs/
+*.log
+
+# Archivos generados por el script (ajusta según tu caso)
+output/
+temp/
+
+#Mis notas
+misnotas.md
+
